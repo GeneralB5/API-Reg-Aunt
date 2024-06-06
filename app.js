@@ -1,16 +1,24 @@
 import express, { json, urlencoded } from "express"
-
+import handlebars from "express-handlebars"
+import Routes from "./routes"
 const app = express()
 app.use(json({limit:'50mb'}))
 app.use(urlencoded({limit:'50mb',extended:true}))
 
+//public
+app.use(express.static(path.join(__dirname + '/public')))
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.engine('hbs',handlebars.engine({
+  extname : 'hbs'}))
+app.set('view engine','hbs')
+app.set('views', __dirname + '/views')
+app.use(( err, req, res, next)=>{
+    console.error(err.stack)
+    res.status(500).send('error de server')
+})
+ 
+app.use(Routes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
