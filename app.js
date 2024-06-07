@@ -1,10 +1,13 @@
 import express, { json, urlencoded } from "express"
 import handlebars from "express-handlebars"
-import Routes from "./routes"
+import Routes from "./routes/index.js"
+import path from "path"
+import { connectDb } from "./config/connectDb.js"
+import __dirname from "./utils/dirName.js"
 const app = express()
 app.use(json({limit:'50mb'}))
 app.use(urlencoded({limit:'50mb',extended:true}))
-
+connectDb()
 //public
 app.use(express.static(path.join(__dirname + '/public')))
 // view engine setup
