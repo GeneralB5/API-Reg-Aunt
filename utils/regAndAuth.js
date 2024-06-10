@@ -2,15 +2,16 @@ const errorHandle = (errMsg)=>{
     throw new Error(errMsg)
 }
 
-function validarDominio(email,supportedDomains){
+function validarDominio(email,supportedDomains,TLDArry){
     // Verificar si el email es válido
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!emailValido) {
         return "Email no válido";
     }
     // Extraer el dominio del email sin el .
-    const dominio = email.split('@')[1].split('.')[0];
-    return supportedDomains.includes(dominio);
+    const [dominio ,TLD] = email.split('@')[1].split('.');
+    
+    return supportedDomains.includes(dominio) && TLDArry.length > 0? TLDArry.includes(TLD) : true;
 }
 
 function tiene_numeros(texto){
@@ -65,7 +66,11 @@ const authAndRegister= (user,userExample = {
         accepted:true,
         domains:{
                   supported:[]
-                }
+                },
+        TLD:{
+                supported:[],
+                combinations:true
+            }
         },
     password:{
             nameLength:10,
@@ -94,6 +99,7 @@ const authAndRegister= (user,userExample = {
                specialChar=undefined,
                accepted=undefined,
                domains = undefined,
+               TLD =undefined,
                range = {from:1,to:100},
                nameLength = 40} = objectEntered
         const firstNameUser = isNaN(user.valor)?user.valor.trim():user.valor
@@ -119,8 +125,13 @@ const authAndRegister= (user,userExample = {
             }
             ///domains
             if(domains != undefined && user.clave == "email"){
-                let {supported} = domains
-                console.log(validarDominio(user.valor,supported))
+                let {supported=[]} = domains
+                let TLDArry = TLD ? 
+                    TLD.supported!=undefined?TLD.supported : []
+                    :[]
+                // if its true, then it will be supported, same case with TLD (top level domain)
+                ///what happend if its .com.ar with TDL.combination
+                console.log(validarDominio(user.valor,supported,TLDArry))
             }
             console.log('bien')
 }
@@ -130,4 +141,4 @@ const authAndRegister= (user,userExample = {
 }
 }
 authAndRegister({first_name:"Aan1",age:14,email:"ian@gmail.com"},{age:{accepted:true,range:{from:13}},
-email:{accepted:true,domains:{supported:["gmail"]}}})
+email:{accepted:true,domains:{supported:["gmail"]},TLD:{supported:["com"]}}})
