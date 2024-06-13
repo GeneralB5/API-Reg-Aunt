@@ -2,16 +2,20 @@ const errorHandle = (errMsg)=>{
     throw new Error(errMsg)
 }
 
-function validarDominio(email,supportedDomains,TLDArry){
+function validarDominio(email,supportedDomains,TLDArry,combination = true){
     // Verificar si el email es válido
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!emailValido) {
         return "Email no válido";
     }
     // Extraer el dominio del email sin el .
-    const [dominio ,TLD] = email.split('@')[1].split('.');
-    
-    return supportedDomains.includes(dominio) && TLDArry.length > 0? TLDArry.includes(TLD) : true;
+    const [dominio ,TLD, TLDComb] = email.split('@')[1].split('.');
+
+    if(combination){
+    return TLDArry.length > 0? TLDArry.includes(TLD) : true && supportedDomains.length > 0 ? supportedDomains.includes(dominio): true
+    }else{
+    return TLDComb ==undefined?  TLDArry.length > 0? TLDArry.includes(TLD) : true && supportedDomains.length > 0 ? supportedDomains.includes(dominio): true : false
+    }
 }
 
 function tiene_numeros(texto){
@@ -93,13 +97,14 @@ const authAndRegister= (user,userExample = {
     ///array con el user y las especificaciones
     arrayDeObjetos.map(user =>{
         const importantValues=["password","first_name"]
-        const objectEntered = userExample[user.clave] ? userExample[user.clave] : {}
+        const objectEntered = userExample[user.clave.toLowerCase()] ? userExample[user.clave.toLowerCase()] : {}
         const {numbers=undefined,
                mayus=undefined,
                specialChar=undefined,
                accepted=undefined,
                domains = undefined,
                TLD =undefined,
+               DNIlength = 8,
                range = {from:1,to:100},
                nameLength = 40} = objectEntered
         const firstNameUser = isNaN(user.valor)?user.valor.trim():user.valor
@@ -129,16 +134,23 @@ const authAndRegister= (user,userExample = {
                 let TLDArry = TLD ? 
                     TLD.supported!=undefined?TLD.supported : []
                     :[]
-                // if its true, then it will be supported, same case with TLD (top level domain)
-                ///what happend if its .com.ar with TDL.combination
-                console.log(validarDominio(user.valor,supported,TLDArry))
+                let domainsAccepted = supported.length > 0 ? "solo se acepta/an los dominios: " + supported.join(", ") :"Se aceptan todos los dominios"
+                let TDLAccepted =!TLD.combinations ? "No se aceptan combinacions":"Se aceptan combinacione TDL" 
+                validarDominio(user.valor,supported,TLDArry,TLD.combinations)? "" : errorHandle(domainsAccepted+" ."+TDLAccepted )
             }
-            console.log('bien')
+            //DNILenght
+            ///fijarse que no importe el uso de mayusculas
+            if(DNIlength != undefined && user.clave.toLowerCase() == "dni"){
+                const DNIWithOutspaces = user.valor.replace(/\s+/g, '');
+                const DNIverification = DNIWithOutspaces.length <= DNIlength
+                DNIverification ? "" : errorHandle(`DNI erroneo, maximo largo es ${DNIlength}, el ingresado es ${DNIWithOutspaces.length}`)
+            }
+            console.log('bien') 
 }
 })
 } catch (error) {
     console.log(error)
 }
 }
-authAndRegister({first_name:"Aan1",age:14,email:"ian@gmail.com"},{age:{accepted:true,range:{from:13}},
-email:{accepted:true,domains:{supported:["gmail"]},TLD:{supported:["com"]}}})
+authAndRegister({DNI:"12 345 6661"},{age:{accepted:true,range:{from:13}},
+dni:{accepted:true},email:{accepted:true,domains:{supported:[]},TLD:{supported:[]}}})
