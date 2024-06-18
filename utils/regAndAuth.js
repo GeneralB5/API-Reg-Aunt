@@ -1,3 +1,5 @@
+import DTOUser from "../MongoDB/dto/dto.js";
+
 const errorHandle = (errMsg)=>{
     throw new Error(errMsg)
 }
@@ -41,7 +43,20 @@ function detectarCaracteresEspeciales(texto) {
     return expresionRegular.test(texto)
 }
 
-const authAndRegister= (user,userExample = {
+class DTO_User_Build_In{
+    constructor({first_name,last_name,age,DNI,email,password}){
+        this.password = password 
+        this.first_name = first_name || undefined
+        this.last_name = last_name || undefined
+        this.age = age || undefined
+        this.dni = DNI || undefined
+        this.email = email 
+        this.fullname = first_name?first_name+" "+(last_name?last_name:""):email
+        this.last_used = Date.now()
+    }
+}
+
+const authAndRegister= (userEntry = {first_name:"",last_name:"",email:"",age:1,dni:12345678,password:""},userExample = {
     first_name:{
         mayus:true,
         specialChar:true,
@@ -82,7 +97,7 @@ const authAndRegister= (user,userExample = {
             numbers:true,
             mayus:true
             },
-    secondPassword:{
+    secondpassword:{
                     accepted:true,
                     nameLength:10,
                     specialChar:true,
@@ -90,13 +105,25 @@ const authAndRegister= (user,userExample = {
                     mayus:true,
                     }
         
+},otherConfig={
+    importantValuesArry:[],
+    otherFunci:{
+        acceptedKeys:[],
+        funcions:[]
+    },
+    neededValues:[],
+    DTO:DTO_User_Build_In(),
 }) => {
     try {
-    
-    const arrayDeObjetos = Object.entries(user).map(([clave, valor]) => ({ clave , valor }));
+    const arrayDeObjetos = Object.entries(userEntry).map(([clave, valor]) => ({ clave , valor }));
+    ///important values
+    const {importantValuesArry= [],neededValues = [],DTO = DTO_User_Build_In,otherFunci={acceptedKeys:[],funcions:[]}} = otherConfig
+    importantValuesArry.every(element => typeof element === 'string')? "":errorHandle("Solo puede haber strings en el array")
+    const importantValues=importantValuesArry.concat(neededValues.length == 0?["password","email"]: neededValues)
     ///array con el user y las especificaciones
+    importantValues.map( value =>arrayDeObjetos.find( x => x.clave == value)? "" : errorHandle(`no existe ${value} en el usuario`))
+
     arrayDeObjetos.map(user =>{
-        const importantValues=["password","first_name"]
         const objectEntered = userExample[user.clave.toLowerCase()] ? userExample[user.clave.toLowerCase()] : {}
         const {numbers=undefined,
                mayus=undefined,
@@ -123,9 +150,11 @@ const authAndRegister= (user,userExample = {
             }
             if(nameLength < firstNameUser.length) return errorHandle("Nombre demasiado largo")
             ///range of age 
-            if(user.clave == "age"){
+        
+            if(user.clave == "age" ){
                 let num = parseInt(user.valor)
-                const {from=1,to=100} = range
+                let {from=1,to=100} = range
+                if(isNaN(to) || isNaN(from)) return errorHandle("Range erroniamente ingresado") 
                 num >= from && num <= to ? "" : errorHandle("Edad por fuera de parametros") 
             }
             ///domains
@@ -145,12 +174,27 @@ const authAndRegister= (user,userExample = {
                 const DNIverification = DNIWithOutspaces.length <= DNIlength
                 DNIverification ? "" : errorHandle(`DNI erroneo, maximo largo es ${DNIlength}, el ingresado es ${DNIWithOutspaces.length}`)
             }
+            if(user.clave.toLowerCase() =="secondpassword"){
+                user.valor == arrayDeObjetos.find(x => x.clave == "password").valor? "":errorHandle("No es igual la contraseña")
+            }
+            
+            if(Object.keys(otherFunci).length >0){
+            const {funcions=[],acceptedKeys=[]} = otherFunci
+            if(acceptedKeys.includes(user.clave)){
+            funcions.length >0?otherFunci.map(func =>{
+                
+            }):""}
+            }
             console.log('bien') 
-}
+    }
 })
+///dto para retornar
+    return new DTO(userEntry)
 } catch (error) {
     console.log(error)
 }
 }
-authAndRegister({DNI:"12 345 6661"},{age:{accepted:true,range:{from:13}},
-dni:{accepted:true},email:{accepted:true,domains:{supported:[]},TLD:{supported:[]}}})
+let user = authAndRegister({email:"holaquetal@gmail",password:"aca",secondPassword:"aca"},{age:{accepted:true,range:{from:'11'}},
+dni:{accepted:true},email:{accepted:true,domains:{supported:[]},TLD:{supported:[]}},secondpassword:{accepted:true}},
+{otherFunci:[],importantValuesArry:[]})
+//console.log(user)
