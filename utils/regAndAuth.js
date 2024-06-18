@@ -43,7 +43,7 @@ function detectarCaracteresEspeciales(texto) {
     return expresionRegular.test(texto)
 }
 
-class DTO_User_Build_In{
+class DTO_User_Built_In{
     constructor({first_name,last_name,age,DNI,email,password}){
         this.password = password 
         this.first_name = first_name || undefined
@@ -112,12 +112,12 @@ const authAndRegister= (userEntry = {first_name:"",last_name:"",email:"",age:1,d
         funcions:[]
     },
     neededValues:[],
-    DTO:DTO_User_Build_In(),
+    DTO:DTO_User_Built_In(),
 }) => {
     try {
     const arrayDeObjetos = Object.entries(userEntry).map(([clave, valor]) => ({ clave , valor }));
     ///important values
-    const {importantValuesArry= [],neededValues = [],DTO = DTO_User_Build_In,otherFunci={acceptedKeys:[],funcions:[]}} = otherConfig
+    const {importantValuesArry= [],neededValues = [],DTO = DTO_User_Built_In,otherFunci={acceptedKeys:[],funcions:[]}} = otherConfig
     importantValuesArry.every(element => typeof element === 'string')? "":errorHandle("Solo puede haber strings en el array")
     const importantValues=importantValuesArry.concat(neededValues.length == 0?["password","email"]: neededValues)
     ///array con el user y las especificaciones
