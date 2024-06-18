@@ -182,7 +182,7 @@ const authAndRegister= (userEntry = {first_name:"",last_name:"",email:"",age:1,d
             const {funcions=[],acceptedKeys=[]} = otherFunci
             if(acceptedKeys.includes(user.clave)){
             funcions.length >0?otherFunci.map(func =>{
-                
+                func(user.clave,user.valor) ? errorHandle("No ha cumplido con requerimientos agregados") : " "
             }):""}
             }
             console.log('bien') 
