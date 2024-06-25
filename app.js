@@ -39,4 +39,12 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+const httpsServer =()=>{
+  const PORT = configObject.PORT
+  return app.listen(PORT,(err) =>{
+  if (err)  logger.error(err)
+  console.log(`Escuchando en el puerto ${PORT}`)
+})}
+httpsServer()
+
 export default app
